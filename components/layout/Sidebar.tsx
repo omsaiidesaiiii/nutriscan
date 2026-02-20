@@ -15,7 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { logout } from "@/app/(auth)/actions";
+import { useAuth } from "@/providers/AuthProvider";
 import { useSidebar } from "@/hooks/use-sidebar";
 
 const navItems = [
@@ -31,6 +31,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { isCollapsed, toggleSidebar, isMobileOpen, closeMobile } =
     useSidebar();
+  const { signOut } = useAuth();
 
   return (
     <>
@@ -120,24 +121,22 @@ export default function Sidebar() {
 
         {/* Footer */}
         <div className="p-3 border-t border-zinc-50">
-          <form action={logout}>
-            <button
-              type="submit"
-              className={cn(
-                "group flex items-center space-x-3 px-3 py-2.5 w-full rounded-xl text-sm font-medium text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition-all duration-200",
-                isCollapsed && "justify-center px-0"
-              )}
-            >
-              <LogOut className="h-4.5 w-4.5 shrink-0" />
-              {!isCollapsed && <span>Sign Out</span>}
+          <button
+            onClick={() => signOut()}
+            className={cn(
+              "group flex items-center space-x-3 px-3 py-2.5 w-full rounded-xl text-sm font-medium text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 transition-all duration-200",
+              isCollapsed && "justify-center px-0"
+            )}
+          >
+            <LogOut className="h-4.5 w-4.5 shrink-0" />
+            {!isCollapsed && <span>Sign Out</span>}
 
-              {isCollapsed && (
-                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-800 text-white text-xs font-medium rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-all z-50 whitespace-nowrap">
-                  Sign Out
-                </div>
-              )}
-            </button>
-          </form>
+            {isCollapsed && (
+              <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-800 text-white text-xs font-medium rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-all z-50 whitespace-nowrap">
+                Sign Out
+              </div>
+            )}
+          </button>
         </div>
       </aside>
     </>
