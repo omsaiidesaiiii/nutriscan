@@ -1,6 +1,6 @@
 'use client'
 
-import { Trash2, Loader2, XCircle } from 'lucide-react'
+import { Trash2, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { deleteMeal } from '@/app/(dashboard)/dashboard/actions'
 import { toast } from 'react-hot-toast'
@@ -14,16 +14,16 @@ export default function DeleteMealButton({ id }: DeleteMealButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDelete = async () => {
-    if (!confirm('Abort this record? This action is irreversible.')) return
+    if (!confirm('Delete this meal? This action cannot be undone.')) return
     
     setIsDeleting(true)
     const result = await deleteMeal(id)
     setIsDeleting(false)
 
     if (result.success) {
-      toast.success('Record purged from archive')
+      toast.success('Meal deleted')
     } else {
-      toast.error('Purge sequence failed')
+      toast.error('Failed to delete meal')
     }
   }
 
@@ -32,16 +32,16 @@ export default function DeleteMealButton({ id }: DeleteMealButtonProps) {
       onClick={handleDelete}
       disabled={isDeleting}
       className={cn(
-        "p-3 text-emerald-100 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all",
+        "p-2 text-zinc-200 hover:text-zinc-500 hover:bg-zinc-50 rounded-xl transition-all",
         "opacity-0 group-hover:opacity-100 focus:opacity-100",
-        "disabled:opacity-50 border border-transparent hover:border-rose-100 shadow-sm"
+        "disabled:opacity-50"
       )}
-      title="Purge Record"
+      title="Delete meal"
     >
       {isDeleting ? (
-        <Loader2 className="h-5 w-5 animate-spin" />
+        <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
-        <XCircle className="h-5 w-5" />
+        <Trash2 className="h-4 w-4" />
       )}
     </button>
   )

@@ -9,18 +9,18 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar()
 
   return (
-    <div className="min-h-screen bg-[#fbfdfc]">
+    <div className="min-h-screen bg-zinc-50">
       <Sidebar />
       <div 
         className={cn(
           "transition-all duration-300 ease-in-out",
-          "pl-0 lg:pl-72",
+          "pl-0 lg:pl-64",
           isCollapsed && "lg:pl-20"
         )}
       >
         <Topbar />
-        <main className="pt-20 min-h-screen">
-          <div className="max-w-[1400px] mx-auto p-6 md:p-10">
+        <main className="pt-16 min-h-screen">
+          <div className="max-w-[1200px] mx-auto p-6 md:p-8">
             {children}
           </div>
         </main>

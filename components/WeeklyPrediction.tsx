@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { TrendingUp, Sparkles, Loader2, BrainCircuit, ChevronRight } from 'lucide-react'
+import { TrendingUp, Sparkles, Loader2, BrainCircuit } from 'lucide-react'
 import { getWeeklyAveragesAction } from '@/app/(dashboard)/dashboard/actions'
 import toast from 'react-hot-toast'
 
@@ -23,14 +23,12 @@ export default function WeeklyPrediction({ profile }: WeeklyPredictionProps) {
     setPrediction(null)
     
     try {
-      // 1. Get weekly stats via Server Action
       const stats = await getWeeklyAveragesAction()
       
       if (!stats) {
         throw new Error('Could not fetch weekly stats')
       }
 
-      // 2. Call AI Prediction API
       const response = await fetch('/api/weekly-prediction', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -57,68 +55,49 @@ export default function WeeklyPrediction({ profile }: WeeklyPredictionProps) {
   }
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden transition-all hover:shadow-md">
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-              <TrendingUp className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Weekly AI Prediction</h2>
-              <p className="text-purple-100 text-xs font-medium uppercase tracking-wider">Trend Analysis</p>
-            </div>
-          </div>
-          <Sparkles className="h-6 w-6 text-purple-200 animate-pulse" />
+    <div className="card overflow-hidden">
+      <div className="px-6 py-4 border-b border-zinc-50 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <TrendingUp className="h-4 w-4 text-emerald-600" />
+          <h2 className="text-base font-semibold text-zinc-900">AI Weekly Prediction</h2>
         </div>
+        <Sparkles className="h-4 w-4 text-zinc-300" />
       </div>
 
-      <div className="p-8">
+      <div className="p-6">
         {!prediction && !isLoading ? (
           <div className="text-center py-4">
-            <p className="text-gray-500 mb-6 font-medium">
-              Ready to see if your current eating habits align with your <span className="text-indigo-600 font-bold">{profile.goal}</span> goal?
+            <p className="text-sm text-zinc-500 mb-5">
+              See if your current eating aligns with your <span className="text-emerald-600 font-medium capitalize">{profile.goal}</span> goal.
             </p>
             <button
               onClick={handleAnalyze}
-              className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-95 flex items-center justify-center group"
+              className="w-full flex justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all active:scale-[0.98]"
             >
               Analyze My Week
-              <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         ) : isLoading ? (
-          <div className="py-12 flex flex-col items-center justify-center text-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-indigo-100 rounded-full animate-ping opacity-25"></div>
-              <div className="relative bg-indigo-50 p-4 rounded-full">
-                <BrainCircuit className="h-10 w-10 text-indigo-600 animate-pulse" />
-              </div>
-            </div>
-            <p className="mt-6 text-indigo-600 font-bold animate-pulse">Consulting AI Nutritionist...</p>
-            <p className="text-gray-400 text-xs mt-1">Analyzing your 7-day nutritional trends</p>
+          <div className="py-10 flex flex-col items-center justify-center text-center">
+            <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+            <p className="mt-4 text-sm font-medium text-zinc-900">Analyzing your week...</p>
+            <p className="text-xs text-zinc-400 mt-1">Reviewing your 7-day nutritional trends</p>
           </div>
         ) : (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <BrainCircuit className="h-24 w-24" />
+          <div className="animate-in">
+            <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-5">
+              <div className="flex items-center space-x-2 mb-3">
+                <span className="bg-emerald-600 text-white text-[10px] font-semibold px-2 py-0.5 rounded-md">Prediction</span>
               </div>
-              <div className="relative z-10">
-                <div className="flex items-center space-x-2 mb-4">
-                  <span className="bg-indigo-600 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-md">Prediction</span>
-                </div>
-                <p className="text-gray-800 leading-relaxed font-medium whitespace-pre-wrap">
-                  {prediction}
-                </p>
-              </div>
+              <p className="text-sm text-zinc-700 leading-relaxed whitespace-pre-wrap">
+                {prediction}
+              </p>
             </div>
             
             <button
               onClick={handleAnalyze}
-              className="w-full mt-6 py-3 border-2 border-indigo-100 text-indigo-600 rounded-2xl font-bold text-sm hover:bg-indigo-50 transition-all active:scale-95 flex items-center justify-center"
+              className="w-full mt-4 py-2.5 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-all active:scale-[0.98]"
             >
-              <Loader2 className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : 'hidden'}`} />
               Refresh Analysis
             </button>
           </div>

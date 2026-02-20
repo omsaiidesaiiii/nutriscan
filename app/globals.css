@@ -1,21 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fbfdfc;
-  --foreground: #022c22;
-  
-  /* Premium Emerald Palette */
-  --emerald-50: #ecfdf5;
-  --emerald-100: #d1fae5;
-  --emerald-200: #a7f3d0;
-  --emerald-300: #6ee7b7;
-  --emerald-400: #34d399;
-  --emerald-500: #10b981;
-  --emerald-600: #059669;
-  --emerald-700: #047857;
-  --emerald-800: #065f46;
-  --emerald-900: #064e3b;
-  --emerald-950: #022c22;
+  --background: #fafafa;
+  --foreground: #18181b;
 }
 
 @theme inline {
@@ -23,19 +10,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  
-  /* Extend theme with emerald tokens */
-  --color-brand-50: var(--emerald-50);
-  --color-brand-100: var(--emerald-100);
-  --color-brand-200: var(--emerald-200);
-  --color-brand-300: var(--emerald-300);
-  --color-brand-400: var(--emerald-400);
-  --color-brand-500: var(--emerald-500);
-  --color-brand-600: var(--emerald-600);
-  --color-brand-700: var(--emerald-700);
-  --color-brand-800: var(--emerald-800);
-  --color-brand-900: var(--emerald-900);
-  --color-brand-950: var(--emerald-950);
 }
 
 body {
@@ -46,20 +20,9 @@ body {
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-white/70 backdrop-blur-md border border-emerald-100/50;
-  }
-  
-  .glass-dark {
-    @apply bg-emerald-950/80 backdrop-blur-md border border-emerald-800/30;
-  }
-  
-  .premium-shadow {
-    box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.05), 0 10px 10px -5px rgba(16, 185, 129, 0.02);
-  }
-
-  .premium-card {
-    @apply bg-white rounded-[2rem] border border-emerald-100/30 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1;
+  /* Card style matching signup page: white bg, zinc border, soft shadow, 2rem radius */
+  .card {
+    @apply bg-white border border-zinc-100 shadow-sm rounded-[2rem] transition-all;
   }
 
   .animate-in {
@@ -83,10 +46,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-emerald-100 rounded-full hover:bg-emerald-200 transition-colors;
+  @apply bg-zinc-200 rounded-full hover:bg-zinc-300 transition-colors;
 }
 
-/* Typography Overrides */
-h1, h2, h3, h4, .font-display {
+/* Typography */
+h1, h2, h3, h4 {
   @apply tracking-tight;
 }
