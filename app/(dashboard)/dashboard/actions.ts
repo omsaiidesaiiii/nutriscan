@@ -104,3 +104,33 @@ export async function getWeeklyAveragesAction() {
     return null
   }
 }
+
+export async function logMealPlanAction(meals: any[]) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('User not authenticated')
+
+  const tomorrow = new Date()
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+  tomorrow.setUTCHours(12, 0, 0, 0) // Set to noon tomorrow
+
+  const mealsToInsert = meals.map(meal => ({
+    user_id: user.id,
+    food_name: meal.name,
+    calories: meal.calories,
+    protein: meal.protein,
+    carbs: meal.carbs,
+    fat: meal.fat,
+    created_at: tomorrow.toISOString()
+  }))
+
+  const { error } = await supabase.from('meals').insert(mealsToInsert)
+
+  if (error) {
+    console.error('Error logging meal plan:', error)
+    return { error: error.message }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}

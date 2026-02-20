@@ -9,6 +9,7 @@ import WeeklyChart from '@/components/WeeklyChart'
 import DeleteMealButton from '@/components/DeleteMealButton'
 
 import WeeklyPrediction from '@/components/WeeklyPrediction'
+import MealPlanner from '@/components/MealPlanner'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -169,7 +170,8 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
+            <MealPlanner profile={profile} weeklyStats={weeklyStats} />
             <WeeklyChart data={weeklyStats} />
             <AddMealForm />
           </div>

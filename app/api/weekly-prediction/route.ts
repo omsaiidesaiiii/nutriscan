@@ -35,7 +35,7 @@ Keep response short.
 No markdown formatting.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash", // Sticking to 2.0-flash to ensure stability, 2.5 is very new
+      model: "gemini-2.0-flash",
       contents: [{ role: 'user', parts: [{ text: prompt }] }]
     });
 
