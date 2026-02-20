@@ -7,9 +7,11 @@ import { deleteMeal, getWeeklyStats } from './actions'
 import AIFeedback from '@/components/AIFeedback'
 import WeeklyChart from '@/components/WeeklyChart'
 import DeleteMealButton from '@/components/DeleteMealButton'
+import { AlertCircle } from 'lucide-react'
 
 import WeeklyPrediction from '@/components/WeeklyPrediction'
 import MealPlanner from '@/components/MealPlanner'
+import AdaptiveIntelligence from '@/components/AdaptiveIntelligence'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -177,7 +179,35 @@ export default async function DashboardPage() {
           </div>
           <div className="lg:col-span-1 space-y-8">
             <WeeklyPrediction profile={profile} />
+            <AdaptiveIntelligence profile={profile} weeklyStats={weeklyStats} />
             <AIFeedback totals={totals} targets={profile} />
+
+            {/* Health Flags */}
+            {(profile.low_gi_priority || profile.sodium_warning || profile.heart_healthy_mode) && (
+              <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest mb-4">Health Mode Active</h3>
+                <div className="space-y-3">
+                  {profile.low_gi_priority && (
+                    <div className="flex items-center space-x-3 text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-100">
+                      <Zap className="h-4 w-4" />
+                      <span className="text-xs font-bold">Low GI Priority (Diabetes-Aware)</span>
+                    </div>
+                  )}
+                  {profile.sodium_warning && (
+                    <div className="flex items-center space-x-3 text-amber-600 bg-amber-50 px-3 py-2 rounded-xl border border-amber-100">
+                      <AlertCircle className="h-4 w-4" />
+                      <span className="text-xs font-bold">Low Sodium Mode (Hypertension)</span>
+                    </div>
+                  )}
+                  {profile.heart_healthy_mode && (
+                    <div className="flex items-center space-x-3 text-rose-600 bg-rose-50 px-3 py-2 rounded-xl border border-rose-100">
+                      <Shield className="h-4 w-4" />
+                      <span className="text-xs font-bold">Heart Healthy (Low Sat-Fat)</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">

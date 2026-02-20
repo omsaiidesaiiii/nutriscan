@@ -111,6 +111,7 @@ export default function ProfilePage() {
           gender: formData.gender,
           goal: formData.goal,
           activity_level: formData.activity_level,
+          health_conditions: formData.health_conditions,
         }),
       })
 

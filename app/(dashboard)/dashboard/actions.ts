@@ -29,8 +29,52 @@ export async function addMeal(formData: FormData) {
     return { error: error.message }
   }
 
+  // Update streak
+  await updateStreak(user.id)
+
   revalidatePath('/dashboard')
   return { success: true }
+}
+
+async function updateStreak(userId: string) {
+  const supabase = await createClient()
+  
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('current_streak, updated_at')
+    .eq('id', userId)
+    .single()
+
+  if (!profile) return
+
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  const yesterday = today - (24 * 60 * 60 * 1000)
+
+  const lastUpdate = profile.updated_at ? new Date(profile.updated_at) : null
+  const lastUpdateDate = lastUpdate 
+    ? new Date(lastUpdate.getFullYear(), lastUpdate.getMonth(), lastUpdate.getDate()).getTime()
+    : null
+
+  let newStreak = profile.current_streak || 0
+
+  if (lastUpdateDate === today) {
+    return
+  }
+  
+  if (lastUpdateDate === yesterday) {
+    newStreak += 1
+  } else {
+    newStreak = 1
+  }
+
+  await supabase
+    .from('profiles')
+    .update({ 
+      current_streak: newStreak,
+      updated_at: now.toISOString()
+    })
+    .eq('id', userId)
 }
 
 export async function deleteMeal(id: string) {

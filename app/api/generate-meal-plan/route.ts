@@ -14,16 +14,25 @@ export async function POST(request: Request) {
       target_fat, 
       goal, 
       health_conditions,
-      weekly_trend
+      weekly_trend,
+      low_gi_priority,
+      sodium_warning,
+      heart_healthy_mode
     } = await request.json();
 
     const trendSummary = weekly_trend?.length > 0 
       ? `Recent calorie trend (last ${weekly_trend.length} days): ${weekly_trend.map((s: any) => `${s.date}: ${s.calories}kcal`).join(', ')}`
       : 'No recent trend data available.';
 
+    const healthFocus = [
+      low_gi_priority ? "Priority: Low Glycemic Index (Diabetes-friendly)" : "",
+      sodium_warning ? "Constraint: Low Sodium (Hypertension-aware)" : "",
+      heart_healthy_mode ? "Constraint: Low Saturated Fat (Heart Healthy)" : ""
+    ].filter(Boolean).join('. ');
+
     const prompt = `You are a professional dietitian.
 
-Create a one-day meal plan for tomorrow.
+Create a one-day indian meal plan for tomorrow.
 
 User goal: ${goal}
 Target calories: ${target_calories}
@@ -31,6 +40,7 @@ Target protein: ${target_protein}
 Target carbs: ${target_carbs}
 Target fat: ${target_fat}
 Health conditions: ${health_conditions?.join(', ') || 'None'}
+${healthFocus ? `Health Focus: ${healthFocus}` : ''}
 ${trendSummary}
 
 Requirements:
@@ -78,7 +88,7 @@ Do NOT include markdown.`;
 
     // Using gemini-1.5-flash for speed and reliability, gemini-2.0-flash is also valid if supported
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash", 
+      model: "gemini-2.5-flash", 
       contents: [{ role: 'user', parts: [{ text: prompt }] }]
     });
 
