@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Barcode, Loader2, AlertCircle } from 'lucide-react'
+import { Search, Barcode, Loader2, AlertCircle, Zap } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface BarcodeScannerProps {
   onProductFound: (product: {
@@ -35,7 +36,7 @@ export default function BarcodeScanner({ onProductFound }: BarcodeScannerProps) 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to find product')
+        throw new Error(data.error || 'Identity not found in archive')
       }
 
       onProductFound(data)
@@ -48,38 +49,40 @@ export default function BarcodeScanner({ onProductFound }: BarcodeScannerProps) 
   }
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={handleSearch} className="flex gap-2">
+    <div className="space-y-6">
+      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Barcode className="h-5 w-5 text-gray-400" />
+          <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+            <Barcode className="h-5 w-5 text-emerald-950/20" />
           </div>
           <input
             type="text"
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
-            placeholder="Enter Barcode Number..."
-            className="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+            placeholder="Scan ID or Enter Code..."
+            className="block w-full pl-16 pr-6 h-20 bg-emerald-50/30 border border-emerald-50 rounded-[1.5rem] text-sm font-bold text-emerald-950 focus:bg-white focus:border-emerald-200 transition-all outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={isLoading || !barcode}
-          className="inline-flex items-center px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-md active:scale-95"
+          className="h-20 px-10 bg-emerald-950 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-emerald-900/10 hover:bg-emerald-900 disabled:opacity-50 transition-all active:scale-[0.98] flex items-center justify-center space-x-3 group"
         >
           {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+            <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
           ) : (
-            <Search className="h-5 w-5 mr-2" />
+            <>
+              <Zap className="h-4 w-4 text-emerald-400 fill-emerald-400 group-hover:scale-110 transition-transform" />
+              <span>Decrypt Code</span>
+            </>
           )}
-          Find
         </button>
       </form>
 
       {error && (
-        <div className="flex items-center p-4 text-sm text-red-800 border border-red-100 rounded-xl bg-red-50">
-          <AlertCircle className="flex-shrink-0 inline h-4 w-4 mr-3" />
-          <span className="font-medium">{error}</span>
+        <div className="flex items-center p-6 text-[10px] font-black uppercase tracking-widest text-rose-500 border border-rose-100 rounded-[1.5rem] bg-rose-50 animate-in italic">
+          <AlertCircle className="flex-shrink-0 inline h-5 w-5 mr-3" />
+          <span>{error}</span>
         </div>
       )}
     </div>

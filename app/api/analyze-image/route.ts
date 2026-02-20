@@ -35,7 +35,7 @@ Do not include any explanation or markdown formatting. Just the JSON object.`;
     // Using gemini-2.0-flash-lite which often has separate/higher free quota
     // than the standard gemini-2.0-flash model.
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-lite",
+      model: "gemini-2.5-flash",
       contents: [
         prompt,
         {
