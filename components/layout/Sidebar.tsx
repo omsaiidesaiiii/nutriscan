@@ -90,9 +90,8 @@ export default function Sidebar() {
                     : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900",
                   isCollapsed && "justify-center px-0"
                 )}
-              >
-                <item.icon className={cn(
-                  "h-[18px] w-[18px] shrink-0",
+              >                <item.icon className={cn(
+                  "h-4.5 w-4.5 shrink-0",
                   isActive ? "text-emerald-600" : "text-zinc-400 group-hover:text-zinc-700"
                 )} />
                 
@@ -120,7 +119,7 @@ export default function Sidebar() {
                 isCollapsed && "justify-center px-0"
               )}
             >
-              <LogOut className="h-[18px] w-[18px] shrink-0" />
+              <LogOut className="h-4.5 w-4.5 shrink-0" />
               {!isCollapsed && <span>Sign Out</span>}
               
               {isCollapsed && (

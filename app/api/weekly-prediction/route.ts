@@ -37,11 +37,9 @@ No markdown formatting.`;
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [{ role: 'user', parts: [{ text: prompt }] }]
-    });
+    });    const text = response.text?.trim();
 
-    const text = response.text.trim();
-
-    return NextResponse.json({ prediction: text });
+    return NextResponse.json({ prediction: text || 'No prediction available.' });
   } catch (error: any) {
     console.error("Weekly Prediction API Error:", error);
     return NextResponse.json({ error: 'Failed to generate weekly prediction' }, { status: 500 });

@@ -5,13 +5,36 @@ import { Flame, Trophy, TrendingDown, TrendingUp, AlertCircle, CheckCircle2, Bra
 import { calculateConsistencyScore } from '@/lib/calculateConsistencyScore'
 import { cn } from '@/lib/utils'
 
+interface Profile {
+  target_calories: number
+  target_protein: number
+  target_carbs: number
+  target_fat: number
+  goal: string
+  weight: number
+  current_streak?: number
+  health_conditions?: string[]
+}
+
+interface WeeklyStat {
+  date: string
+  calories: number
+  protein: number
+}
+
+interface Adjustment {
+  status: 'optimal' | 'warning'
+  explanation: string
+  suggested_calorie_change: number
+}
+
 interface AdaptiveIntelligenceProps {
-  profile: any
-  weeklyStats: any[]
+  profile: Profile
+  weeklyStats: WeeklyStat[]
 }
 
 export default function AdaptiveIntelligence({ profile, weeklyStats }: AdaptiveIntelligenceProps) {
-  const [adjustment, setAdjustment] = useState<any>(null)
+  const [adjustment, setAdjustment] = useState<Adjustment | null>(null)
   const [loading, setLoading] = useState(true)
 
   const { score_percentage, rating, badge } = calculateConsistencyScore(weeklyStats, {
@@ -95,9 +118,9 @@ export default function AdaptiveIntelligence({ profile, weeklyStats }: AdaptiveI
             )}>
               <div className="flex items-start space-x-3">
                 {adjustment.status === 'optimal' ? (
-                  <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-500" />
+                  <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0 text-emerald-500" />
                 ) : (
-                  <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-zinc-500" />
+                  <AlertCircle className="h-5 w-5 mt-0.5 shrink-0 text-zinc-500" />
                 )}
                 <div>
                   <p className="text-sm font-medium text-zinc-900 mb-1">

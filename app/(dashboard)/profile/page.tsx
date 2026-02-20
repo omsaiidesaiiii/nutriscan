@@ -140,9 +140,8 @@ export default function ProfilePage() {
       if (error) throw error
 
       toast.success('Profile updated successfully!')
-      router.push('/dashboard')
-    } catch (error: any) {
-      toast.error(error.message || 'Update failed')
+      router.push('/dashboard')    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Update failed')
     } finally {
       setLoading(false)
     }

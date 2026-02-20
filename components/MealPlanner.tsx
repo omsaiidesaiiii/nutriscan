@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Sparkles, Loader2, Coffee, UtensilsCrossed, Apple, Flame } from 'lucide-react'
+import { Sparkles, Loader2, Coffee, UtensilsCrossed, Apple, type LucideIcon } from 'lucide-react'
 import { logMealPlanAction } from '@/app/(dashboard)/dashboard/actions'
 import toast from 'react-hot-toast'
-import { cn } from '@/lib/utils'
 
 interface MealPlan {
   breakfast: Meal
@@ -28,9 +27,8 @@ interface MealPlannerProps {
     target_carbs: number
     target_fat: number
     goal: string
-    health_conditions: string[]
-  }
-  weeklyStats?: any[]
+    health_conditions: string[]  }
+  weeklyStats?: { date: string; calories: number; protein: number }[]
 }
 
 export default function MealPlanner({ profile, weeklyStats }: MealPlannerProps) {
@@ -55,7 +53,7 @@ export default function MealPlanner({ profile, weeklyStats }: MealPlannerProps) 
       const data = await response.json()
       setPlan(data)
       toast.success('Meal plan generated!')
-    } catch (error) {
+    } catch {
       toast.error('Plan generation failed. Please try again.')
     } finally {
       setIsLoading(false)
@@ -74,15 +72,14 @@ export default function MealPlanner({ profile, weeklyStats }: MealPlannerProps) 
       ]
       const result = await logMealPlanAction(meals)
       if (result.error) throw new Error(result.error)
-      toast.success('Meals logged to your journal!')
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to log meals')
+      toast.success('Meals logged to your journal!')    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to log meals')
     } finally {
       setIsSaving(false)
     }
   }
 
-  const MealCard = ({ meal, icon: Icon, label }: { meal: Meal, icon: any, label: string }) => (
+  const MealCard = ({ meal, icon: Icon, label }: { meal: Meal, icon: LucideIcon, label: string }) => (
     <div className="card p-5 group">
       <div className="flex items-center justify-between mb-3">
         <div className="p-2 bg-zinc-50 rounded-xl border border-zinc-100 group-hover:bg-emerald-50 group-hover:border-emerald-100 transition-colors">
@@ -90,7 +87,7 @@ export default function MealPlanner({ profile, weeklyStats }: MealPlannerProps) 
         </div>
         <span className="text-xs font-medium text-zinc-400">{label}</span>
       </div>
-      <h4 className="font-medium text-zinc-900 text-sm mb-3 line-clamp-2 min-h-[40px]">
+      <h4 className="font-medium text-zinc-900 text-sm mb-3 line-clamp-2 min-h-10">
         {meal.name}
       </h4>
       <div className="flex items-center space-x-3 text-xs">

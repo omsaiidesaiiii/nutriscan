@@ -90,10 +90,12 @@ Do NOT include markdown.`;
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash", 
       contents: [{ role: 'user', parts: [{ text: prompt }] }]
-    });
+    });    const text = response.text?.trim();
 
-    const text = response.text.trim();
-    
+    if (!text) {
+      return NextResponse.json({ error: 'Empty response from AI' }, { status: 500 });
+    }
+
     try {
       // Clean the text in case Gemini adds markdown code blocks
       const cleanJson = text.replace(/^```json/, '').replace(/```$/, '').trim();

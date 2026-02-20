@@ -66,7 +66,7 @@ export default async function DashboardPage() {
           Hello, {user.email?.split('@')[0]}
         </h1>
         <p className="text-sm text-zinc-500">
-          You've consumed {totals.calories} of {profile.target_calories} kcal today.
+          You&apos;ve consumed {totals.calories} of {profile.target_calories} kcal today.
         </p>
       </div>
 
@@ -106,7 +106,7 @@ export default async function DashboardPage() {
         {/* Today's Meals */}
         <div className="card overflow-hidden flex flex-col">
           <div className="px-6 py-4 border-b border-zinc-50 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-zinc-900">Today's Meals</h2>
+            <h2 className="text-base font-semibold text-zinc-900">Today&apos;s Meals</h2>
             <span className="text-xs text-zinc-400">{meals?.length || 0} logged</span>
           </div>
 

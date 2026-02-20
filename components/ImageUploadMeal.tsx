@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { Camera, Loader2, AlertCircle, Sparkles } from 'lucide-react'
+import Image from 'next/image'
 
 interface ImageUploadMealProps {
   onProductFound: (product: {
@@ -61,9 +62,8 @@ export default function ImageUploadMeal({ onProductFound }: ImageUploadMealProps
         carbs: data.carbs,
         fat: data.fat
       })
-      setPreview(null)
-    } catch (err: any) {
-      setError(err.message)
+      setPreview(null)    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Analysis failed')
     } finally {
       setIsLoading(false)
     }
@@ -74,7 +74,7 @@ export default function ImageUploadMeal({ onProductFound }: ImageUploadMealProps
       <div className="flex flex-col items-center justify-center space-y-4">
         {preview ? (
           <div className="relative group w-full aspect-video max-w-lg rounded-2xl overflow-hidden border border-zinc-200">
-            <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+            <Image src={preview} alt="Preview" fill unoptimized className="object-cover" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
               <button
                 onClick={() => {
@@ -131,7 +131,7 @@ export default function ImageUploadMeal({ onProductFound }: ImageUploadMealProps
 
       {error && (
         <div className="flex items-center p-3 text-sm text-amber-600 border border-amber-200/50 rounded-xl bg-amber-50">
-          <AlertCircle className="flex-shrink-0 h-4 w-4 mr-2" />
+          <AlertCircle className="shrink-0 h-4 w-4 mr-2" />
           <span>{error}</span>
         </div>
       )}
