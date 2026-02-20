@@ -8,6 +8,8 @@ import AIFeedback from '@/components/AIFeedback'
 import WeeklyChart from '@/components/WeeklyChart'
 import DeleteMealButton from '@/components/DeleteMealButton'
 
+import WeeklyPrediction from '@/components/WeeklyPrediction'
+
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -172,6 +174,7 @@ export default async function DashboardPage() {
             <AddMealForm />
           </div>
           <div className="lg:col-span-1 space-y-8">
+            <WeeklyPrediction profile={profile} />
             <AIFeedback totals={totals} targets={profile} />
             
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">

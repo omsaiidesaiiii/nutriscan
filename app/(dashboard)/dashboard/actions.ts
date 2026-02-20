@@ -94,3 +94,13 @@ export async function getWeeklyStats() {
   return Array.from(statsMap.values()).reverse()
 }
 
+import { getWeeklyAverages } from '@/lib/getWeeklyStats'
+
+export async function getWeeklyAveragesAction() {
+  try {
+    return await getWeeklyAverages()
+  } catch (error) {
+    console.error('Action error fetching weekly averages:', error)
+    return null
+  }
+}
