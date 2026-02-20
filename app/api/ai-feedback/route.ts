@@ -10,30 +10,32 @@ const ai = new GoogleGenAI({
 
 export async function POST(request: Request) {
   try {
-    const { calories, protein, carbs, fat } = await request.json();
+    const { totals, targets } = await request.json();
+    const { calories, protein, carbs, fat } = totals;
+    const { target_calories, target_protein, target_carbs, target_fat } = targets;
 
     const prompt = `You are a certified nutrition coach.
-Analyze the following daily intake:
+Analyze the following daily intake relative to the user's customized targets:
 
-Calories: ${calories}
-Protein: ${protein} grams
-Carbs: ${carbs} grams
-Fat: ${fat} grams
+Current Intake:
+- Calories: ${calories} kcal
+- Protein: ${protein}g
+- Carbs: ${carbs}g
+- Fat: ${fat}g
 
-Assume:
-- Target calories: 2200
-- Target protein: 120g
-- Target carbs: 250g
-- Target fat: 70g
+User's Daily Targets:
+- Target Calories: ${target_calories} kcal
+- Target Protein: ${target_protein}g
+- Target Carbs: ${target_carbs}g
+- Target Fat: ${target_fat}g
 
 Give:
-1. Clear feedback.
-2. What is lacking.
-3. What is excess. (Note: if any value seems like a typo, e.g. 33kg of fat, call it out as an error)
-4. One actionable suggestion.
+1. Concise analysis of current progress vs targets.
+2. What is lacking or in excess.
+3. One specific, actionable suggestion for the next meal.
 
-Keep response short, motivational, and practical.
-Do NOT include markdown formatting.
+Keep response short (max 4-5 sentences), motivational, and practical.
+Do NOT include markdown formatting or bolding.
 Provide the response as clean, plain text.`;
 
     // gemini-2.0-flash-lite has higher free-tier limits

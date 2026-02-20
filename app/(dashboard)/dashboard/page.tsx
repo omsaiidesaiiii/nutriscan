@@ -23,16 +23,27 @@ export default async function DashboardPage() {
   const endOfDay = new Date()
   endOfDay.setUTCHours(23, 59, 59, 999)
 
-  // Parallel fetch for today's meals and weekly stats
-  const [mealsResponse, weeklyStats] = await Promise.all([
+  // Parallel fetch for today's meals, weekly stats, and user profile
+  const [mealsResponse, weeklyStats, profileResponse] = await Promise.all([
     supabase
       .from('meals')
       .select('*')
       .gte('created_at', startOfDay.toISOString())
       .lte('created_at', endOfDay.toISOString())
       .order('created_at', { ascending: false }),
-    getWeeklyStats()
+    getWeeklyStats(),
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
   ])
+
+  const { data: profile } = profileResponse
+
+  if (!profile) {
+    redirect('/profile')
+  }
 
   const { data: meals, error: mealsError } = mealsResponse
 
@@ -50,6 +61,26 @@ export default async function DashboardPage() {
     }),
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   )
+
+  const ProgressBar = ({ current, target, colorClass }: { current: number, target: number, colorClass: string }) => {
+    const percentage = Math.min((current / target) * 100, 100)
+    return (
+      <div className="mt-4">
+        <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-1.5">
+          <span className="text-gray-400">Progress</span>
+          <span className={percentage >= 100 ? 'text-emerald-500' : 'text-gray-500'}>
+            {Math.round(percentage)}%
+          </span>
+        </div>
+        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+          <div 
+            className={`h-full ${colorClass} transition-all duration-500 ease-out`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -69,6 +100,7 @@ export default async function DashboardPage() {
                 <span className="text-sm font-semibold text-gray-900">{user.email?.split('@')[0]}</span>
                 <span className="text-xs text-gray-400">{user.email}</span>
               </div>
+              <a href="/profile" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700">Profile</a>
               <form action={logout}>
                 <button
                   type="submit"
@@ -92,8 +124,9 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-baseline space-x-1">
               <span className="text-3xl font-bold text-gray-900">{totals.calories}</span>
-              <span className="text-sm text-gray-400 font-medium">kcal</span>
+              <span className="text-sm text-gray-400 font-medium whitespace-nowrap">/ {profile.target_calories} kcal</span>
             </div>
+            <ProgressBar current={totals.calories} target={profile.target_calories} colorClass="bg-orange-500" />
           </div>
           
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm transition-transform hover:scale-[1.02]">
@@ -103,8 +136,9 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-baseline space-x-1">
               <span className="text-3xl font-bold text-gray-900">{totals.protein}</span>
-              <span className="text-sm text-gray-400 font-medium">g</span>
+              <span className="text-sm text-gray-400 font-medium whitespace-nowrap">/ {profile.target_protein} g</span>
             </div>
+            <ProgressBar current={totals.protein} target={profile.target_protein} colorClass="bg-blue-500" />
           </div>
 
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm transition-transform hover:scale-[1.02]">
@@ -114,8 +148,9 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-baseline space-x-1">
               <span className="text-3xl font-bold text-gray-900">{totals.carbs}</span>
-              <span className="text-sm text-gray-400 font-medium">g</span>
+              <span className="text-sm text-gray-400 font-medium whitespace-nowrap">/ {profile.target_carbs} g</span>
             </div>
+            <ProgressBar current={totals.carbs} target={profile.target_carbs} colorClass="bg-emerald-500" />
           </div>
 
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm transition-transform hover:scale-[1.02]">
@@ -125,8 +160,9 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-baseline space-x-1">
               <span className="text-3xl font-bold text-gray-900">{totals.fat}</span>
-              <span className="text-sm text-gray-400 font-medium">g</span>
+              <span className="text-sm text-gray-400 font-medium whitespace-nowrap">/ {profile.target_fat} g</span>
             </div>
+            <ProgressBar current={totals.fat} target={profile.target_fat} colorClass="bg-purple-500" />
           </div>
         </div>
 
@@ -136,7 +172,7 @@ export default async function DashboardPage() {
             <AddMealForm />
           </div>
           <div className="lg:col-span-1 space-y-8">
-            <AIFeedback totals={totals} />
+            <AIFeedback totals={totals} targets={profile} />
             
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between">

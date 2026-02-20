@@ -10,9 +10,15 @@ interface AIFeedbackProps {
     carbs: number
     fat: number
   }
+  targets: {
+    target_calories: number
+    target_protein: number
+    target_carbs: number
+    target_fat: number
+  }
 }
 
-export default function AIFeedback({ totals }: AIFeedbackProps) {
+export default function AIFeedback({ totals, targets }: AIFeedbackProps) {
   const [feedback, setFeedback] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -25,7 +31,7 @@ export default function AIFeedback({ totals }: AIFeedbackProps) {
       const response = await fetch('/api/ai-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(totals),
+        body: JSON.stringify({ totals, targets }),
       })
 
       const data = await response.json()

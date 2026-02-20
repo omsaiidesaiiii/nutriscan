@@ -1,7 +1,7 @@
 'use client'
 
 import { addMeal } from '@/app/(dashboard)/dashboard/actions'
-import { PlusCircle, Utensils, Barcode as BarcodeIcon, Edit3, Camera } from 'lucide-react'
+import { PlusCircle, Utensils, Barcode as BarcodeIcon, Edit3, Camera, Sparkles, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import BarcodeScanner from './BarcodeScanner'
 import ImageUploadMeal from './ImageUploadMeal'
@@ -14,11 +14,48 @@ export default function AddMealForm() {
   // Controlled form state
   const [mealData, setMealData] = useState({
     food_name: '',
+    quantity: '',
     calories: '',
     protein: '',
     carbs: '',
     fat: ''
   })
+  const [isEstimating, setIsEstimating] = useState(false)
+
+  const handleEstimate = async () => {
+    if (!mealData.food_name || !mealData.quantity) {
+      toast.error('Please enter food name and quantity first')
+      return
+    }
+
+    setIsEstimating(true)
+    try {
+      const response = await fetch('/api/estimate-macros', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          food_name: mealData.food_name,
+          quantity: mealData.quantity
+        })
+      })
+
+      if (!response.ok) throw new Error('Failed to estimate')
+      const data = await response.json()
+
+      setMealData(prev => ({
+        ...prev,
+        calories: Math.round(data.calories).toString(),
+        protein: Math.round(data.protein).toString(),
+        carbs: Math.round(data.carbs).toString(),
+        fat: Math.round(data.fat).toString()
+      }))
+      toast.success('Macros estimated!')
+    } catch (error) {
+      toast.error('AI estimation failed. Please enter manually.')
+    } finally {
+      setIsEstimating(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -38,6 +75,7 @@ export default function AddMealForm() {
       toast.success('Meal logged successfully!')
       setMealData({
         food_name: '',
+        quantity: '',
         calories: '',
         protein: '',
         carbs: '',
@@ -57,6 +95,7 @@ export default function AddMealForm() {
   }) => {
     setMealData({
       food_name: product.name,
+      quantity: '1 serving',
       calories: Math.round(product.calories).toString(),
       protein: Math.round(product.protein).toString(),
       carbs: Math.round(product.carbs).toString(),
@@ -84,7 +123,7 @@ export default function AddMealForm() {
             }`}
           >
             <Utensils className="h-4 w-4 mr-2" />
-            Manual
+            Manual/AI
           </button>
           <button
             onClick={() => setEntryMode('barcode')}
@@ -127,8 +166,8 @@ export default function AddMealForm() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 items-end">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+            <div className="md:col-span-1 lg:col-span-2">
               <label htmlFor="food_name" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
                 Food Name
               </label>
@@ -142,71 +181,106 @@ export default function AddMealForm() {
                 placeholder="What did you eat?"
               />
             </div>
-            <div>
-              <label htmlFor="calories" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
-                Calories
+            <div className="md:col-span-1 lg:col-span-1">
+              <label htmlFor="quantity" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
+                Quantity
               </label>
               <input
-                id="calories"
-                value={mealData.calories}
-                onChange={(e) => setMealData({...mealData, calories: e.target.value})}
-                type="number"
+                id="quantity"
+                value={mealData.quantity}
+                onChange={(e) => setMealData({...mealData, quantity: e.target.value})}
+                type="text"
                 required
-                className="w-full rounded-2xl border-gray-100 bg-gray-50/50 px-5 py-3.5 text-sm font-semibold focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-                placeholder="0"
+                className="w-full rounded-2xl border-gray-100 bg-gray-50/50 px-5 py-3.5 text-sm font-semibold focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder-gray-300"
+                placeholder="e.g. 200g, 2 pieces"
               />
             </div>
-            <div>
-              <label htmlFor="protein" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
-                Protein (g)
-              </label>
-              <input
-                id="protein"
-                value={mealData.protein}
-                onChange={(e) => setMealData({...mealData, protein: e.target.value})}
-                type="number"
-                required
-                className="w-full rounded-2xl border-gray-100 bg-gray-50/50 px-5 py-3.5 text-sm font-semibold focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-                placeholder="0"
-              />
-            </div>
-            <div>
-              <label htmlFor="carbs" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
-                Carbs (g)
-              </label>
-              <input
-                id="carbs"
-                value={mealData.carbs}
-                onChange={(e) => setMealData({...mealData, carbs: e.target.value})}
-                type="number"
-                required
-                className="w-full rounded-2xl border-gray-100 bg-gray-50/50 px-5 py-3.5 text-sm font-semibold focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-                placeholder="0"
-              />
-            </div>
-            <div>
-              <label htmlFor="fat" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
-                Fat (g)
-              </label>
-              <input
-                id="fat"
-                value={mealData.fat}
-                onChange={(e) => setMealData({...mealData, fat: e.target.value})}
-                type="number"
-                required
-                className="w-full rounded-2xl border-gray-100 bg-gray-50/50 px-5 py-3.5 text-sm font-semibold focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-                placeholder="0"
-              />
+            <div className="lg:col-span-1">
+              <button
+                type="button"
+                onClick={handleEstimate}
+                disabled={isEstimating || !mealData.food_name || !mealData.quantity}
+                className="w-full h-[54px] bg-purple-50 text-purple-700 rounded-2xl font-bold text-sm hover:bg-purple-100 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center border border-purple-100"
+              >
+                {isEstimating ? (
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                ) : (
+                  <Sparkles className="h-5 w-5 mr-2" />
+                )}
+                {isEstimating ? 'Estimating...' : 'AI Estimate'}
+              </button>
             </div>
           </div>
+
+          { (mealData.calories || isEstimating) && (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div>
+                <label htmlFor="calories" className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
+                  Calories (kcal)
+                </label>
+                <input
+                  id="calories"
+                  value={mealData.calories}
+                  onChange={(e) => setMealData({...mealData, calories: e.target.value})}
+                  type="number"
+                  required
+                  className="w-full rounded-xl border-gray-100 bg-gray-50 px-4 py-2.5 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 transition-all text-orange-600"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label htmlFor="protein" className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
+                  Protein (g)
+                </label>
+                <input
+                  id="protein"
+                  value={mealData.protein}
+                  onChange={(e) => setMealData({...mealData, protein: e.target.value})}
+                  type="number"
+                  required
+                  className="w-full rounded-xl border-gray-100 bg-gray-50 px-4 py-2.5 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 transition-all text-blue-600"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label htmlFor="carbs" className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
+                  Carbs (g)
+                </label>
+                <input
+                  id="carbs"
+                  value={mealData.carbs}
+                  onChange={(e) => setMealData({...mealData, carbs: e.target.value})}
+                  type="number"
+                  required
+                  className="w-full rounded-xl border-gray-100 bg-gray-50 px-4 py-2.5 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 transition-all text-emerald-600"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label htmlFor="fat" className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">
+                  Fat (g)
+                </label>
+                <input
+                  id="fat"
+                  value={mealData.fat}
+                  onChange={(e) => setMealData({...mealData, fat: e.target.value})}
+                  type="number"
+                  required
+                  className="w-full rounded-xl border-gray-100 bg-gray-50 px-4 py-2.5 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-indigo-500/10 transition-all text-purple-600"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end pt-4 border-t border-gray-50">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !mealData.calories}
               className="px-10 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-600/20 active:scale-95 disabled:opacity-50 flex items-center"
             >
               <PlusCircle className="mr-2 h-5 w-5" />
-              {isSubmitting ? 'Saving...' : 'Add Meal to Log'}
+              {isSubmitting ? 'Saving...' : 'Save Meal to Log'}
             </button>
           </div>
         </form>
