@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AddMealForm from '@/components/AddMealForm'
-import { Utensils, Zap, Shield, Flame, TrendingUp, BrainCircuit, Calendar, ArrowRight } from 'lucide-react'
+import { Utensils } from 'lucide-react'
 import DeleteMealButton from '@/components/DeleteMealButton'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -51,50 +51,19 @@ export default async function DashboardPage() {
     { calories: 0, protein: 0, carbs: 0, fat: 0 }
   )
 
-  const MacroCard = ({ 
-    label, 
-    current, 
-    target, 
-    unit, 
-    color 
-  }: { 
-    label: string, 
-    current: number, 
-    target: number, 
-    unit: string, 
-    color: string
-  }) => {
-    const percentage = Math.min((current / target) * 100, 100)
-    return (
-      <div className="card p-6">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-medium text-zinc-500">{label}</span>
-          <span className="text-xs font-medium text-zinc-400">{Math.round(percentage)}%</span>
-        </div>
-        
-        <div className="space-y-3">
-          <div className="flex items-baseline space-x-1">
-            <span className="text-2xl font-semibold text-zinc-900">{Math.round(current)}</span>
-            <span className="text-xs text-zinc-400">/ {target}{unit}</span>
-          </div>
-          
-          <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
-            <div 
-              className={cn("h-full transition-all duration-700 ease-out rounded-full", color)}
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const macros = [
+    { label: 'Calories', current: totals.calories, target: profile.target_calories, unit: ' kcal', color: 'bg-emerald-500' },
+    { label: 'Protein', current: totals.protein, target: profile.target_protein, unit: 'g', color: 'bg-emerald-600' },
+    { label: 'Carbs', current: totals.carbs, target: profile.target_carbs, unit: 'g', color: 'bg-emerald-400' },
+    { label: 'Fat', current: totals.fat, target: profile.target_fat, unit: 'g', color: 'bg-zinc-400' },
+  ]
 
   return (
     <div className="space-y-8 pb-8 animate-in">
-      {/* Simple Header */}
+      {/* Header */}
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
-          Good morning, {user.email?.split('@')[0]}
+          Hello, {user.email?.split('@')[0]}
         </h1>
         <p className="text-sm text-zinc-500">
           You've consumed {totals.calories} of {profile.target_calories} kcal today.
@@ -103,37 +72,35 @@ export default async function DashboardPage() {
 
       {/* Macro Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MacroCard label="Calories" current={totals.calories} target={profile.target_calories} unit=" kcal" color="bg-emerald-500" />
-        <MacroCard label="Protein" current={totals.protein} target={profile.target_protein} unit="g" color="bg-emerald-600" />
-        <MacroCard label="Carbs" current={totals.carbs} target={profile.target_carbs} unit="g" color="bg-emerald-400" />
-        <MacroCard label="Fat" current={totals.fat} target={profile.target_fat} unit="g" color="bg-zinc-400" />
+        {macros.map((macro) => {
+          const percentage = Math.min((macro.current / macro.target) * 100, 100)
+          return (
+            <div key={macro.label} className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-medium text-zinc-500">{macro.label}</span>
+                <span className="text-xs font-medium text-zinc-400">{Math.round(percentage)}%</span>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-baseline space-x-1">
+                  <span className="text-2xl font-semibold text-zinc-900">{Math.round(macro.current)}</span>
+                  <span className="text-xs text-zinc-400">/ {macro.target}{macro.unit}</span>
+                </div>
+                <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
+                  <div 
+                    className={cn("h-full transition-all duration-700 ease-out rounded-full", macro.color)}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
         {/* Logging Section */}
-        <div className="xl:col-span-2 space-y-6">
+        <div className="xl:col-span-2">
           <AddMealForm />
-
-          {/* Quick Navigation */}
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { title: 'Planner', desc: 'AI meal plans', icon: Calendar, href: '/planner' },
-              { title: 'Analytics', desc: 'Weekly trends', icon: TrendingUp, href: '/analytics' },
-              { title: 'Intelligence', desc: 'AI insights', icon: BrainCircuit, href: '/intelligence' },
-            ].map((item) => (
-              <Link 
-                key={item.href}
-                href={item.href} 
-                className="card p-5 flex flex-col items-center text-center hover:border-zinc-200 transition-all group"
-              >
-                <div className="p-2.5 bg-zinc-50 rounded-xl mb-3 group-hover:bg-emerald-50 transition-colors">
-                  <item.icon className="h-5 w-5 text-zinc-500 group-hover:text-emerald-600 transition-colors" />
-                </div>
-                <h3 className="text-sm font-medium text-zinc-900">{item.title}</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">{item.desc}</p>
-              </Link>
-            ))}
-          </div>
         </div>
 
         {/* Today's Meals */}
@@ -171,10 +138,9 @@ export default async function DashboardPage() {
           </div>
           
           <div className="p-4 border-t border-zinc-50">
-             <Link href="/meals" className="w-full py-2.5 border border-zinc-200 rounded-xl flex items-center justify-center space-x-2 hover:bg-zinc-50 transition-all text-sm font-medium text-zinc-700 group">
-                <span>View all meals</span>
-                <ArrowRight className="h-3.5 w-3.5 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
-             </Link>
+            <Link href="/meals" className="w-full py-2.5 border border-zinc-200 rounded-xl flex items-center justify-center text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-all">
+              View all meals
+            </Link>
           </div>
         </div>
       </div>
