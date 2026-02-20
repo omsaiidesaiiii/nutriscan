@@ -22,16 +22,16 @@ export default async function SignupPage({
             className="object-cover object-center"
           />
           {/* Green Overlay */}
-          <div className="absolute inset-0 bg-emerald-900/60 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 to-transparent" />
+          <div className="absolute inset-0 bg-black/30" />
+<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         </div>
         
         <div className="relative z-10 flex flex-col p-12 h-full justify-between">
           <Link href="/" className="flex items-center gap-2 text-white transition-opacity hover:opacity-80">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
-              <span className="text-xl font-bold leading-none text-emerald-300">N</span>
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-white">NutriAI</span>
+            
+            <span className="text-2xl font-bold tracking-tight text-white">Nutri
+              <span className="text-emerald-300">Scan</span>
+            </span>
           </Link>
           
           <div className="space-y-4">
