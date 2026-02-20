@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { signup } from '../actions'
 import Image from 'next/image'
-import { Activity, Sparkles, Target } from 'lucide-react'
 
 export default async function SignupPage({
   searchParams,
@@ -11,74 +10,59 @@ export default async function SignupPage({
   const { error } = await searchParams
 
   return (
-    <div className="flex min-h-screen bg-[#fbfdfc]">
-      {/* Left Side - Image/Branding */}
-      <div className="relative hidden w-[55%] flex-col bg-emerald-950 lg:flex overflow-hidden">
+    <div className="flex min-h-screen bg-zinc-50">
+      {/* Left Side - Image/Branding (Hidden on smaller screens) */}
+      <div className="relative hidden w-1/2 flex-col justify-between bg-zinc-900 lg:flex">
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1600&auto=format&fit=crop"
             alt="Healthy meal preparation"
             fill
             priority
-            className="object-cover opacity-30 mix-blend-overlay"
+            className="object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/40 to-transparent" />
+          {/* Green Overlay */}
+          <div className="absolute inset-0 bg-black/30" />
+<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         </div>
         
-        <div className="relative z-10 flex flex-col p-20 h-full justify-between">
-          <Link href="/" className="flex items-center space-x-3 transition-opacity hover:opacity-80">
-            <div className="bg-emerald-500 p-2 rounded-2xl shadow-xl shadow-emerald-500/20 transform rotate-6">
-              <Activity className="h-8 w-8 text-white" />
-            </div>
-            <span className="text-3xl font-black tracking-tighter text-white uppercase italic">
-              Smart<span className="text-emerald-400">Log</span>
+        <div className="relative z-10 flex flex-col p-12 h-full justify-between">
+          <Link href="/" className="flex items-center gap-2 text-white transition-opacity hover:opacity-80">
+            
+            <span className="text-2xl font-bold tracking-tight text-white">Nutri
+              <span className="text-emerald-300">Scan</span>
             </span>
           </Link>
           
-          <div className="space-y-8 animate-in delay-200">
-            <div className="flex items-center space-x-3 text-emerald-400 font-bold text-xs uppercase tracking-[0.3em]">
-               <Target className="h-4 w-4" />
-               <span>Biometric Protocol</span>
-            </div>
-            <h1 className="text-6xl font-black tracking-tighter text-white leading-[1.05]">
-              Deploy your own <br /> <span className="text-emerald-400 italic">health strategy.</span>
+          <div className="space-y-4">
+            <h1 className="text-4xl font-semibold tracking-tight text-white leading-tight">
+              Start your journey to <span className="text-emerald-300">better health.</span>
             </h1>
-            <p className="text-emerald-100/60 text-xl max-w-lg leading-relaxed font-medium">
-              Initialize your bio-profile and start receiving recursive AI feedback to optimize your metabolic velocity.
+            <p className="text-emerald-100 text-lg max-w-md leading-relaxed">
+              Join thousands of users optimizing their nutrition and achieving their goals with AI-driven insights.
             </p>
-            
-            <div className="grid grid-cols-2 gap-10 pt-10">
-               <div className="flex flex-col">
-                  <span className="text-3xl font-black text-white">2.5s</span>
-                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mt-1">Estimation Speed</span>
-               </div>
-               <div className="flex flex-col">
-                  <span className="text-3xl font-black text-white">24/7</span>
-                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mt-1">AI Monitoring</span>
-               </div>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Right Side - Signup Form */}
-      <div className="flex w-full items-center justify-center p-8 lg:w-[45%] lg:p-20">
-        <div className="w-full max-w-md space-y-10 animate-in">
-          <div className="space-y-2 text-center lg:text-left">
-            <h2 className="text-4xl font-black tracking-tight text-emerald-950 uppercase italic">
-              Create Protocol
+      <div className="flex w-full items-center justify-center p-8 lg:w-1/2 lg:p-12">
+        <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="text-center">
+            <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
+              Create an account
             </h2>
-            <p className="text-emerald-900/40 font-bold uppercase tracking-widest text-xs">
-              Initialize your SmartLog credentials
+            <p className="mt-2 text-sm text-zinc-500">
+              Enter your information to get started
             </p>
           </div>
           
-          <div className="bg-white border border-emerald-50 shadow-2xl shadow-emerald-900/5 rounded-[3rem] p-10 relative overflow-hidden group">
-            <form className="space-y-8 relative z-10" action={signup}>
-              <div className="space-y-6">
-                <div className="group/field">
-                  <label htmlFor="email" className="block text-[10px] font-black text-emerald-900/40 uppercase tracking-widest mb-2 px-1">
-                    Verified Email ID
+          <div className="bg-white border border-white/40 shadow-xl shadow-zinc-200/40 rounded-[2rem] p-8 sm:p-10">
+            <form className="space-y-6" action={signup}>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-1.5">
+                    Email address
                   </label>
                   <input
                     id="email"
@@ -86,13 +70,13 @@ export default async function SignupPage({
                     type="email"
                     autoComplete="email"
                     required
-                    className="block w-full rounded-2xl border border-emerald-50 bg-emerald-50/30 px-6 py-4 text-sm font-bold text-emerald-950 placeholder-emerald-900/20 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-8 focus:ring-emerald-500/5 transition-all"
-                    placeholder="user@bio.log"
+                    className="block w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                    placeholder="you@example.com"
                   />
                 </div>
-                <div className="group/field">
-                  <label htmlFor="password" className="block text-[10px] font-black text-emerald-900/40 uppercase tracking-widest mb-2 px-1">
-                    Secure Access Key
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-zinc-700 mb-1.5">
+                    Password
                   </label>
                   <input
                     id="password"
@@ -100,41 +84,40 @@ export default async function SignupPage({
                     type="password"
                     autoComplete="new-password"
                     required
-                    className="block w-full rounded-2xl border border-emerald-50 bg-emerald-50/30 px-6 py-4 text-sm font-bold text-emerald-950 placeholder-emerald-900/20 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-8 focus:ring-emerald-500/5 transition-all"
+                    className="block w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
                     placeholder="••••••••"
                   />
-                  <p className="mt-3 text-[10px] font-bold text-emerald-900/30 uppercase tracking-widest px-1">
-                    Minimum 8 characters required
+                  <p className="mt-1.5 text-xs text-zinc-500">
+                    Must be at least 8 characters long.
                   </p>
                 </div>
               </div>
 
               {error && (
-                <div className="rounded-2xl bg-rose-50 p-4 text-xs font-bold text-rose-500 border border-rose-100 flex items-center gap-3 animate-in">
-                  <Activity className="h-4 w-4 shrink-0" />
+                <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-600 border border-amber-200/50 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
                   {error}
                 </div>
               )}
 
-              <div className="pt-4">
+              <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full h-16 bg-emerald-950 text-white rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-emerald-900/20 hover:bg-emerald-900 hover:-translate-y-1 active:translate-y-0 transition-all flex items-center justify-center space-x-3 group"
+                  className="flex w-full justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-all active:scale-[0.98]"
                 >
-                  <Sparkles className="h-4 w-4 text-emerald-400 group-hover:rotate-12 transition-transform" />
-                  <span>Start Synchronization</span>
+                  Create account
                 </button>
               </div>
             </form>
             
-            <div className="mt-12 text-center pt-8 border-t border-emerald-50">
-               <p className="text-[10px] font-black text-emerald-900/30 uppercase tracking-widest mb-4">
-                  Already a member?
-               </p>
-               <Link href="/login" className="inline-flex h-12 items-center px-8 rounded-xl border border-emerald-100 text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 transition-all">
-                  Sign In to Station
-               </Link>
-            </div>
+            <p className="mt-8 text-center text-sm text-zinc-500">
+              Already have an account?{' '}
+              <Link href="/login" className="font-semibold text-emerald-600 hover:text-emerald-500 hover:underline transition-all">
+                Sign in instead
+              </Link>
+            </p>
           </div>
         </div>
       </div>
