@@ -72,7 +72,7 @@ Ensure the response is a single JSON object.`;
         { status: 500 }
       );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Estimation API Error:", error);
     return NextResponse.json(
       { error: "Failed to estimate macros" },

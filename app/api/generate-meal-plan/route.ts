@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         ? `Recent calorie trend (last ${
             weekly_trend.length
           } days): ${weekly_trend
-            .map((s: any) => `${s.date}: ${s.calories}kcal`)
+            .map((s: { date: string; calories: number }) => `${s.date}: ${s.calories}kcal`)
             .join(", ")}`
         : "No recent trend data available.";
 
@@ -131,7 +131,7 @@ Do NOT include markdown.`;
         { status: 500 }
       );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Meal Plan Generation Error:", error);
     return NextResponse.json(
       { error: "Failed to generate meal plan" },
