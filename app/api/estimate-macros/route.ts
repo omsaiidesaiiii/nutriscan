@@ -10,7 +10,10 @@ export async function POST(request: Request) {
     const { food_name, quantity } = await request.json();
 
     if (!food_name || !quantity) {
-      return NextResponse.json({ error: 'Food name and quantity are required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Food name and quantity are required" },
+        { status: 400 }
+      );
     }
 
     const prompt = `You are a certified nutritionist.
@@ -34,30 +37,46 @@ Ensure the response is a single JSON object.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: [{ role: 'user', parts: [{ text: prompt }] }]
-    });    const text = response.text?.trim();
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+    const text = response.text?.trim();
 
     if (!text) {
-      return NextResponse.json({ error: 'Empty response from AI' }, { status: 500 });
+      return NextResponse.json(
+        { error: "Empty response from AI" },
+        { status: 500 }
+      );
     }
 
     try {
       // Clean the text in case Gemini adds markdown code blocks
-      const cleanJson = text.replace(/^```json/, '').replace(/```$/, '').trim();
+      const cleanJson = text
+        .replace(/^```json/, "")
+        .replace(/```$/, "")
+        .trim();
       const nutrition = JSON.parse(cleanJson);
 
       // Validate structure
-      if (typeof nutrition.calories !== 'number' || typeof nutrition.protein !== 'number') {
-        throw new Error('Invalid nutrition data format from AI');
+      if (
+        typeof nutrition.calories !== "number" ||
+        typeof nutrition.protein !== "number"
+      ) {
+        throw new Error("Invalid nutrition data format from AI");
       }
 
       return NextResponse.json(nutrition);
     } catch (parseError) {
       console.error("AI Parse Error:", parseError, "Raw Text:", text);
-      return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to parse AI response" },
+        { status: 500 }
+      );
     }
   } catch (error: any) {
     console.error("Estimation API Error:", error);
-    return NextResponse.json({ error: 'Failed to estimate macros' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to estimate macros" },
+      { status: 500 }
+    );
   }
 }

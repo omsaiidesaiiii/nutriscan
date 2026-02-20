@@ -7,28 +7,35 @@ const ai = new GoogleGenAI({
 
 export async function POST(request: Request) {
   try {
-    const { 
-      target_calories, 
-      target_protein, 
-      target_carbs, 
-      target_fat, 
-      goal, 
+    const {
+      target_calories,
+      target_protein,
+      target_carbs,
+      target_fat,
+      goal,
       health_conditions,
       weekly_trend,
       low_gi_priority,
       sodium_warning,
-      heart_healthy_mode
+      heart_healthy_mode,
     } = await request.json();
 
-    const trendSummary = weekly_trend?.length > 0 
-      ? `Recent calorie trend (last ${weekly_trend.length} days): ${weekly_trend.map((s: any) => `${s.date}: ${s.calories}kcal`).join(', ')}`
-      : 'No recent trend data available.';
+    const trendSummary =
+      weekly_trend?.length > 0
+        ? `Recent calorie trend (last ${
+            weekly_trend.length
+          } days): ${weekly_trend
+            .map((s: any) => `${s.date}: ${s.calories}kcal`)
+            .join(", ")}`
+        : "No recent trend data available.";
 
     const healthFocus = [
       low_gi_priority ? "Priority: Low Glycemic Index (Diabetes-friendly)" : "",
       sodium_warning ? "Constraint: Low Sodium (Hypertension-aware)" : "",
-      heart_healthy_mode ? "Constraint: Low Saturated Fat (Heart Healthy)" : ""
-    ].filter(Boolean).join('. ');
+      heart_healthy_mode ? "Constraint: Low Saturated Fat (Heart Healthy)" : "",
+    ]
+      .filter(Boolean)
+      .join(". ");
 
     const prompt = `You are a professional dietitian.
 
@@ -39,8 +46,8 @@ Target calories: ${target_calories}
 Target protein: ${target_protein}
 Target carbs: ${target_carbs}
 Target fat: ${target_fat}
-Health conditions: ${health_conditions?.join(', ') || 'None'}
-${healthFocus ? `Health Focus: ${healthFocus}` : ''}
+Health conditions: ${health_conditions?.join(", ") || "None"}
+${healthFocus ? `Health Focus: ${healthFocus}` : ""}
 ${trendSummary}
 
 Requirements:
@@ -88,23 +95,30 @@ Do NOT include markdown.`;
 
     // Using gemini-1.5-flash for speed and reliability, gemini-2.0-flash is also valid if supported
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash", 
-      contents: [{ role: 'user', parts: [{ text: prompt }] }]
-    });    const text = response.text?.trim();
+      model: "gemini-2.5-flash",
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+    const text = response.text?.trim();
 
     if (!text) {
-      return NextResponse.json({ error: 'Empty response from AI' }, { status: 500 });
+      return NextResponse.json(
+        { error: "Empty response from AI" },
+        { status: 500 }
+      );
     }
 
     try {
       // Clean the text in case Gemini adds markdown code blocks
-      const cleanJson = text.replace(/^```json/, '').replace(/```$/, '').trim();
+      const cleanJson = text
+        .replace(/^```json/, "")
+        .replace(/```$/, "")
+        .trim();
       const mealPlan = JSON.parse(cleanJson);
-      
+
       // Basic validation of the structure
-      const requiredKeys = ['breakfast', 'lunch', 'dinner', 'snack'];
+      const requiredKeys = ["breakfast", "lunch", "dinner", "snack"];
       for (const key of requiredKeys) {
-        if (!mealPlan[key] || typeof mealPlan[key].calories !== 'number') {
+        if (!mealPlan[key] || typeof mealPlan[key].calories !== "number") {
           throw new Error(`Invalid structure for ${key}`);
         }
       }
@@ -112,10 +126,16 @@ Do NOT include markdown.`;
       return NextResponse.json(mealPlan);
     } catch (parseError) {
       console.error("Meal Plan Parse Error:", parseError, "Raw Text:", text);
-      return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to parse AI response" },
+        { status: 500 }
+      );
     }
   } catch (error: any) {
     console.error("Meal Plan Generation Error:", error);
-    return NextResponse.json({ error: 'Failed to generate meal plan' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to generate meal plan" },
+      { status: 500 }
+    );
   }
 }

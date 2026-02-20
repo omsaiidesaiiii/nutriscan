@@ -7,13 +7,13 @@ const ai = new GoogleGenAI({
 
 export async function POST(request: Request) {
   try {
-    const { 
-      avg_calories, 
-      avg_protein, 
-      target_calories, 
-      target_protein, 
-      goal, 
-      weight 
+    const {
+      avg_calories,
+      avg_protein,
+      target_calories,
+      target_protein,
+      goal,
+      weight,
     } = await request.json();
 
     const prompt = `You are a professional sports nutritionist.
@@ -36,12 +36,18 @@ No markdown formatting.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: [{ role: 'user', parts: [{ text: prompt }] }]
-    });    const text = response.text?.trim();
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+    const text = response.text?.trim();
 
-    return NextResponse.json({ prediction: text || 'No prediction available.' });
+    return NextResponse.json({
+      prediction: text || "No prediction available.",
+    });
   } catch (error: any) {
     console.error("Weekly Prediction API Error:", error);
-    return NextResponse.json({ error: 'Failed to generate weekly prediction' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to generate weekly prediction" },
+      { status: 500 }
+    );
   }
 }
