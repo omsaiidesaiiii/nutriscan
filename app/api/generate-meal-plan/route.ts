@@ -126,10 +126,10 @@ Do NOT include markdown.`;
       return NextResponse.json(mealPlan);
     } catch (parseError) {
       console.error("Meal Plan Parse Error:", parseError, "Raw Text:", text);
-      return NextResponse.json(
-        { error: "Failed to parse AI response" },
-        { status: 500 }
-      );
+     return NextResponse.json(
+  { error: "Failed to parse AI response" },
+  { status: 500 }
+);
     }
   } catch (error: unknown) {
     console.error("Meal Plan Generation Error:", error);
