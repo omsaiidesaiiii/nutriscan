@@ -30,10 +30,11 @@ export default async function DashboardPage() {
       .gte("created_at", startOfDay.toISOString())
       .lte("created_at", endOfDay.toISOString())
       .order("created_at", { ascending: false }),
-    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
   ]);
 
   const { data: profile } = profileResponse;
+  
   if (!profile) {
     redirect("/profile");
   }

@@ -5,8 +5,6 @@ import Topbar from '@/components/layout/Topbar'
 import { SidebarProvider, useSidebar } from '@/hooks/use-sidebar'
 import { cn } from '@/lib/utils'
 
-import ProtectedRoute from '@/components/auth/ProtectedRoute'
-
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar()
 
@@ -37,10 +35,8 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <ProtectedRoute>
-      <SidebarProvider>
-        <DashboardContent>{children}</DashboardContent>
-      </SidebarProvider>
-    </ProtectedRoute>
+    <SidebarProvider>
+      <DashboardContent>{children}</DashboardContent>
+    </SidebarProvider>
   )
 }
