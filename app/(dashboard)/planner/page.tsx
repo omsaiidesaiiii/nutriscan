@@ -18,7 +18,7 @@ export default async function PlannerPage() {
       .select("*")
       .eq("id", user.id)
       .maybeSingle();
-      
+
     profile = data;
   }
 
