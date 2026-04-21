@@ -65,7 +65,7 @@ Do not include any explanation or markdown formatting. Just the JSON object.`;
   } catch (error: any) {
     console.error("Image Analysis Error:", error);
     return NextResponse.json(
-      { error: `Analysis Error: ${error.message}. Please wait a few seconds or try again.` },
+      { error: `Analysis Error: ${error.message || "Unknown error"}. Make sure GEMINI_API_KEY is set in production.` },
       { status: 500 }
     );
   }

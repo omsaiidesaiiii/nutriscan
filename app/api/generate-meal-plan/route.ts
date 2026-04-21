@@ -131,10 +131,10 @@ Do NOT include markdown.`;
   { status: 500 }
 );
     }
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error("Meal Plan Generation Error:", error);
     return NextResponse.json(
-      { error: "Failed to generate meal plan" },
+      { error: `Failed to generate meal plan: ${error.message || "Unknown error"}` },
       { status: 500 }
     );
   }

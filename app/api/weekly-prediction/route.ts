@@ -43,10 +43,10 @@ No markdown formatting.`;
     return NextResponse.json({
       prediction: text || "No prediction available.",
     });
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error("Weekly Prediction API Error:", error);
     return NextResponse.json(
-      { error: "Failed to generate weekly prediction" },
+      { error: `Failed to generate weekly prediction: ${error.message || "Unknown error"}` },
       { status: 500 }
     );
   }
