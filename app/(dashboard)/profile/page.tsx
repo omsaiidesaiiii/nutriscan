@@ -51,13 +51,17 @@ export default function ProfilePage() {
 
       if (profile) {
         setFormData({
-          weight: profile.weight.toString(),
-          height: profile.height.toString(),
-          age: profile.age.toString(),
-          gender: profile.gender,
-          goal: profile.goal,
-          activity_level: profile.activity_level,
-          health_conditions: profile.health_conditions || [],
+          weight: profile.weight?.toString() || "",
+          height: profile.height?.toString() || "",
+          age: profile.age?.toString() || "",
+          gender: profile.gender || "male",
+          goal: profile.goal || "maintain",
+          activity_level: profile.activity_level || "moderate",
+          health_conditions: Array.isArray(profile.health_conditions) 
+            ? profile.health_conditions 
+            : typeof profile.health_conditions === "string" 
+              ? profile.health_conditions.split(",").filter(Boolean)
+              : [],
         });
       }
       setFetchingProfile(false);
