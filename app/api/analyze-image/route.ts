@@ -1,12 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
-});
-
 export async function POST(request: Request) {
   try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: "GEMINI_API_KEY is missing in environment variables" },
+        { status: 500 }
+      );
+    }
+    const ai = new GoogleGenAI({ apiKey });
     const { image } = await request.json();
 
     if (!image) {
@@ -32,8 +36,6 @@ Return ONLY valid JSON:
 Estimate values realistically for one serving.
 Do not include any explanation or markdown formatting. Just the JSON object.`;
 
-    // Using gemini-2.0-flash-lite which often has separate/higher free quota
-    // than the standard gemini-2.0-flash model.
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [
