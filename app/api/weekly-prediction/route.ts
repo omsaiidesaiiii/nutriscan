@@ -38,11 +38,30 @@ Predict:
 Keep response short.
 No markdown formatting.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-    });
-    const text = response.text?.trim();
+    let response;
+    let retries = 3;
+    let delay = 2000;
+
+    for (let i = 0; i < retries; i++) {
+      try {
+        response = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+        });
+        break;
+      } catch (error: any) {
+        const is503 = error.status === 503 || error.message?.includes("503") || error.message?.includes("high demand");
+        if (is503 && i < retries - 1) {
+          console.log(`Gemini 503 error, retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          delay *= 2;
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    const text = response?.text?.trim() || "No prediction available.";
 
     return NextResponse.json({
       prediction: text || "No prediction available.",

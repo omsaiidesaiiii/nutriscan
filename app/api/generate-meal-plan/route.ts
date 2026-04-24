@@ -41,6 +41,12 @@ export async function POST(request: Request) {
       .filter(Boolean)
       .join(". ");
 
+    const conditionsStr = Array.isArray(health_conditions)
+      ? health_conditions.join(", ")
+      : typeof health_conditions === "string"
+      ? health_conditions
+      : "None";
+
     const prompt = `You are a professional dietitian.
 
 Create a one-day indian meal plan for tomorrow.
@@ -50,7 +56,7 @@ Target calories: ${target_calories}
 Target protein: ${target_protein}
 Target carbs: ${target_carbs}
 Target fat: ${target_fat}
-Health conditions: ${health_conditions?.join(", ") || "None"}
+Health conditions: ${conditionsStr}
 ${healthFocus ? `Health Focus: ${healthFocus}` : ""}
 ${trendSummary}
 
@@ -97,12 +103,31 @@ Return ONLY valid JSON in this exact format:
 Do NOT include explanations.
 Do NOT include markdown.`;
 
-    // Using gemini-1.5-flash for speed and reliability, gemini-2.0-flash is also valid if supported
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-    });
-    const text = response.text?.trim();
+    // Implementation of exponential backoff retry for 503 errors
+    let response;
+    let retries = 3;
+    let delay = 2000;
+
+    for (let i = 0; i < retries; i++) {
+      try {
+        response = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+        });
+        break; // Success, exit loop
+      } catch (error: any) {
+        const is503 = error.status === 503 || error.message?.includes("503") || error.message?.includes("high demand");
+        if (is503 && i < retries - 1) {
+          console.log(`Gemini 503 error, retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          delay *= 2; // Exponential backoff
+          continue;
+        }
+        throw error; // Re-throw if not 503 or no retries left
+      }
+    }
+
+    const text = response?.text?.trim();
 
     if (!text) {
       return NextResponse.json(
@@ -112,33 +137,40 @@ Do NOT include markdown.`;
     }
 
     try {
-      // Clean the text in case Gemini adds markdown code blocks
-      const cleanJson = text
-        .replace(/^```json/, "")
-        .replace(/```$/, "")
-        .trim();
-      const mealPlan = JSON.parse(cleanJson);
+      // Robust JSON extraction
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("No JSON found in AI response");
+      }
+      const mealPlan = JSON.parse(jsonMatch[0]);
 
-      // Basic validation of the structure
       const requiredKeys = ["breakfast", "lunch", "dinner", "snack"];
+      
+      // Round all nutritional values to integers to prevent database insertion errors
+      const roundedPlan: any = {};
       for (const key of requiredKeys) {
-        if (!mealPlan[key] || typeof mealPlan[key].calories !== "number") {
-          throw new Error(`Invalid structure for ${key}`);
-        }
+        if (!mealPlan[key]) continue;
+        roundedPlan[key] = {
+          ...mealPlan[key],
+          calories: Math.round(Number(mealPlan[key].calories) || 0),
+          protein: Math.round(Number(mealPlan[key].protein) || 0),
+          carbs: Math.round(Number(mealPlan[key].carbs) || 0),
+          fat: Math.round(Number(mealPlan[key].fat) || 0),
+        };
       }
 
-      return NextResponse.json(mealPlan);
-    } catch (parseError) {
+      return NextResponse.json(roundedPlan);
+    } catch (parseError: any) {
       console.error("Meal Plan Parse Error:", parseError, "Raw Text:", text);
-     return NextResponse.json(
-  { error: "Failed to parse AI response" },
-  { status: 500 }
-);
+      return NextResponse.json(
+        { error: `Failed to parse meal plan: ${parseError.message}` },
+        { status: 500 }
+      );
     }
   } catch (error: any) {
     console.error("Meal Plan Generation Error:", error);
     return NextResponse.json(
-      { error: `Failed to generate meal plan: ${error.message || "Unknown error"}` },
+      { error: `Generation Error: ${error.message || "Unknown error"}` },
       { status: 500 }
     );
   }

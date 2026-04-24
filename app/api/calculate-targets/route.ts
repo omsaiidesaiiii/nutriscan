@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const { weight, height, age, gender, goal, activity_level, health_conditions = [] } = await request.json()
+    let { weight, height, age, gender, goal, activity_level, health_conditions } = await request.json()
+    
+    // Ensure health_conditions is always an array
+    if (!Array.isArray(health_conditions)) {
+      health_conditions = health_conditions ? [health_conditions] : []
+    }
 
     if (!weight || !height || !age || !gender || !goal || !activity_level) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
