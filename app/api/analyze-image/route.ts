@@ -1,16 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
+import { callNvidiaNim } from "@/lib/nvidia";
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "GEMINI_API_KEY is missing in environment variables" },
-        { status: 500 }
-      );
-    }
-    const ai = new GoogleGenAI({ apiKey });
     const { image } = await request.json();
 
     if (!image) {
@@ -21,53 +13,36 @@ export async function POST(request: Request) {
     const base64Data = image.split(",")[1] || image;
     const mimeType = image.split(";")[0].split(":")[1] || "image/jpeg";
 
-    const prompt = `You are a professional nutritionist.
-Analyze this food image.
+    const systemPrompt = `You are a professional nutritionist.
+Analyze the provided food image.
+Respond ONLY with a valid JSON object. No explanations, no markdown formatting, and no thinking blocks in the output.`;
 
-Return ONLY valid JSON:
+    const userPrompt = `Analyze this food image.
+
+Return JSON:
 {
-  "food_name": "",
+  "food_name": "...",
   "calories": number,
   "protein": number,
   "carbs": number,
   "fat": number
-}
+}`;
 
-Estimate values realistically for one serving.
-Do not include any explanation or markdown formatting. Just the JSON object.`;
-
-    let response;
-    let retries = 3;
-    let delay = 2000;
-
-    for (let i = 0; i < retries; i++) {
-      try {
-        response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: [
-            { role: "user", parts: [{ text: prompt }] },
-            {
-              inlineData: {
-                data: base64Data,
-                mimeType: mimeType
-              }
-            }
-          ]
-        });
-        break;
-      } catch (error: any) {
-        const is503 = error.status === 503 || error.message?.includes("503") || error.message?.includes("high demand");
-        if (is503 && i < retries - 1) {
-          console.log(`Gemini 503 error, retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          delay *= 2;
-          continue;
-        }
-        throw error;
-      }
-    }
-
-    const responseText = response?.text?.trim();
+    const responseText = await callNvidiaNim([
+      { role: "system", content: systemPrompt },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: userPrompt },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:${mimeType};base64,${base64Data}`,
+            },
+          },
+        ],
+      },
+    ]);
     
     if (!responseText) {
       throw new Error("No response text received from AI");
@@ -97,7 +72,7 @@ Do not include any explanation or markdown formatting. Just the JSON object.`;
   } catch (error: any) {
     console.error("Image Analysis Error:", error);
     return NextResponse.json(
-      { error: `Analysis Error: ${error.message || "Unknown error"}. Make sure GEMINI_API_KEY is set in production.` },
+      { error: `Analysis Error: ${error.message || "Unknown error"}.` },
       { status: 500 }
     );
   }

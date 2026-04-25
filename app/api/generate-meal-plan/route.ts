@@ -1,16 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
+import { callNvidiaNim } from "@/lib/nvidia";
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "GEMINI_API_KEY is missing in environment variables" },
-        { status: 500 }
-      );
-    }
-    const ai = new GoogleGenAI({ apiKey });
     const {
       target_calories,
       target_protein,
@@ -47,9 +39,11 @@ export async function POST(request: Request) {
       ? health_conditions
       : "None";
 
-    const prompt = `You are a professional dietitian.
+    const systemPrompt = `You are a professional dietitian specializing in Indian cuisine. 
+Your task is to create a one-day meal plan based on the user's specific targets and health conditions.
+Respond ONLY with a valid JSON object. No explanations, no markdown formatting, and no thinking blocks in the output.`;
 
-Create a one-day indian meal plan for tomorrow.
+    const userPrompt = `Create a one-day indian meal plan for tomorrow.
 
 User goal: ${goal}
 Target calories: ${target_calories}
@@ -64,70 +58,19 @@ Requirements:
 - Provide Breakfast, Lunch, Dinner, Snack.
 - Include portion sizes.
 - Include approximate macros per meal.
-- Keep total calories close to target.
-- Avoid foods conflicting with health conditions.
-- Keep suggestions realistic and practical.
-
-Return ONLY valid JSON in this exact format:
+- Total calories must be close to ${target_calories}.
+- Return ONLY valid JSON in this exact format:
 {
-  "breakfast": {
-    "name": "Meal name with portion size",
-    "calories": number,
-    "protein": number,
-    "carbs": number,
-    "fat": number
-  },
-  "lunch": {
-    "name": "Meal name with portion size",
-    "calories": number,
-    "protein": number,
-    "carbs": number,
-    "fat": number
-  },
-  "dinner": {
-    "name": "Meal name with portion size",
-    "calories": number,
-    "protein": number,
-    "carbs": number,
-    "fat": number
-  },
-  "snack": {
-    "name": "Meal name with portion size",
-    "calories": number,
-    "protein": number,
-    "carbs": number,
-    "fat": number
-  }
-}
+  "breakfast": { "name": "...", "calories": number, "protein": number, "carbs": number, "fat": number },
+  "lunch": { "name": "...", "calories": number, "protein": number, "carbs": number, "fat": number },
+  "dinner": { "name": "...", "calories": number, "protein": number, "carbs": number, "fat": number },
+  "snack": { "name": "...", "calories": number, "protein": number, "carbs": number, "fat": number }
+}`;
 
-Do NOT include explanations.
-Do NOT include markdown.`;
-
-    // Implementation of exponential backoff retry for 503 errors
-    let response;
-    let retries = 3;
-    let delay = 2000;
-
-    for (let i = 0; i < retries; i++) {
-      try {
-        response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-        });
-        break; // Success, exit loop
-      } catch (error: any) {
-        const is503 = error.status === 503 || error.message?.includes("503") || error.message?.includes("high demand");
-        if (is503 && i < retries - 1) {
-          console.log(`Gemini 503 error, retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          delay *= 2; // Exponential backoff
-          continue;
-        }
-        throw error; // Re-throw if not 503 or no retries left
-      }
-    }
-
-    const text = response?.text?.trim();
+    const text = await callNvidiaNim([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ]);
 
     if (!text) {
       return NextResponse.json(

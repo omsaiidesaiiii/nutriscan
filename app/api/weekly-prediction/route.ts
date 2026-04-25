@@ -1,16 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
+import { callNvidiaNim } from "@/lib/nvidia";
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "GEMINI_API_KEY is missing in environment variables" },
-        { status: 500 }
-      );
-    }
-    const ai = new GoogleGenAI({ apiKey });
     const {
       avg_calories,
       avg_protein,
@@ -20,9 +12,11 @@ export async function POST(request: Request) {
       weight,
     } = await request.json();
 
-    const prompt = `You are a professional sports nutritionist.
+    const systemPrompt = `You are a professional sports nutritionist.
+Provide a short weight/calorie prediction.
+Respond ONLY with text. No markdown, no explanations, no thinking blocks.`;
 
-User Goal: ${goal}
+    const userPrompt = `User Goal: ${goal}
 User Weight: ${weight} kg
 Target Calories: ${target_calories}
 Average Daily Calories (last 7 days): ${avg_calories}
@@ -33,35 +27,12 @@ Predict:
 1. Is the user likely gaining, losing, or maintaining weight?
 2. Is calorie gap sufficient for their goal?
 3. Recommend calorie adjustment if necessary.
-4. Give one actionable suggestion.
+4. Give one actionable suggestion.`;
 
-Keep response short.
-No markdown formatting.`;
-
-    let response;
-    let retries = 3;
-    let delay = 2000;
-
-    for (let i = 0; i < retries; i++) {
-      try {
-        response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-        });
-        break;
-      } catch (error: any) {
-        const is503 = error.status === 503 || error.message?.includes("503") || error.message?.includes("high demand");
-        if (is503 && i < retries - 1) {
-          console.log(`Gemini 503 error, retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          delay *= 2;
-          continue;
-        }
-        throw error;
-      }
-    }
-
-    const text = response?.text?.trim() || "No prediction available.";
+    const text = await callNvidiaNim([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ]);
 
     return NextResponse.json({
       prediction: text || "No prediction available.",

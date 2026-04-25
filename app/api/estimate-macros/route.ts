@@ -1,17 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
+import { callNvidiaNim } from "@/lib/nvidia";
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "GEMINI_API_KEY is missing in environment variables" },
-        { status: 500 }
-      );
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
     const { food_name, quantity } = await request.json();
 
     if (!food_name || !quantity) {
@@ -21,49 +12,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const prompt = `You are a certified nutritionist.
+    const systemPrompt = `You are a certified nutritionist.
+Respond ONLY with a valid JSON object. No explanations, no markdown formatting, and no thinking blocks in the output.`;
 
-Estimate nutritional values for:
+    const userPrompt = `Estimate nutritional values for:
 Food: ${food_name}
 Quantity: ${quantity}
 
-Return ONLY valid JSON in this exact format:
+Return JSON format:
 {
   "calories": number,
   "protein": number,
   "carbs": number,
   "fat": number
-}
+}`;
 
-Estimate realistic values for the specified serving size. 
-Do not include explanation.
-Do not include markdown.
-Ensure the response is a single JSON object.`;
-
-    let response;
-    let retries = 3;
-    let delay = 2000;
-
-    for (let i = 0; i < retries; i++) {
-      try {
-        response = await ai.models.generateContent({
-          model: "gemini-2.5-flash",
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-        });
-        break;
-      } catch (error: any) {
-        const is503 = error.status === 503 || error.message?.includes("503") || error.message?.includes("high demand");
-        if (is503 && i < retries - 1) {
-          console.log(`Gemini 503 error, retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          delay *= 2;
-          continue;
-        }
-        throw error;
-      }
-    }
-
-    const text = response?.text?.trim();
+    const text = await callNvidiaNim([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ]);
 
     if (!text) {
       return NextResponse.json(
